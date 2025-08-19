@@ -405,7 +405,7 @@ export default {
           res = await emailTest(event, config, isAdmin())
         break
         case 'UPLOAD_IMAGE': // >= 1.5.0
-          if (env.R2 && env.R2_PUBLIC_URL) {
+          if (env.R2_PUBLIC_URL) {
             res = await r2_upload(event, env.R2, env.R2_PUBLIC_URL)
           } else {
             res = await uploadImage(event, config)
@@ -1066,7 +1066,7 @@ function getIp (request) {
 }
 
 // R2上传图片
-async function r2_upload(event, bucket, cdnUrl) {
+async function r2_upload(event, cdnUrl) {
   const { photo } = event
   const res = {}
   try {
@@ -1083,12 +1083,11 @@ async function r2_upload(event, bucket, cdnUrl) {
     if (mime.length > 1) {
       filename += '.' + mime[1].trim()
     }
-    const object = await bucket.put(path + filename, blob)
+    // 🚨 这里删掉 bucket.put，直接返回 publicURL 拼接的地址
     res.code = 0
     res.data = {
       name: filename,
-      size: object.size,
-      etag: object.etag,
+      size: blob.size,
       url: `${cdnUrl}/${path}${filename}`
     }
   } catch (e) {
